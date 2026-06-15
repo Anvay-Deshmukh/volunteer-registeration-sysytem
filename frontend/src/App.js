@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-import { auth, db } from './services/firebaseConfig';
+import { auth } from './services/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore'; // used by AdminGuard
 
 // Pages
 import LoginPage from './pages/LoginPage';
