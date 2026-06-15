@@ -1,0 +1,142 @@
+# Firebase Security Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own document
+      allow read: if isOwner(userId);
+      // Admins can read all users
+      allow read: if isAdmin();
+      // Users cannot write to users collection directly
+      allow write: if false;
+    }
+    
+    // Volunteers collection
+    match /volunteers/{volunteerId} {
+      // Anyone can create a new volunteer registration
+      allow create: if request.resource.data.email != null && request.resource.data.firstName != null;
+      
+      // Volunteers can read their own profile
+      allow read: if isOwner(volunteerId) || isAdmin();
+      
+      // Volunteers can update their own profile
+      allow update: if isOwner(volunteerId) && 
+        !request.resource.data.keys().hasAny(['status', 'createdAt']); // Can't change status or creation date
+      
+      // Only admins can delete volunteers
+      allow delete: if isAdmin();
+    }
+    
+    // Projects collection
+    match /projects/{projectId} {
+      // Authenticated users can read projects
+      allow read: if isAuthenticated();
+      // Only admins can create/update/delete projects
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Assignments collection
+    match /assignments/{assignmentId} {
+      // Users can read their own assignments
+      allow read: if isAuthenticated() && 
+        (resource.data.volunteerId == request.auth.uid || isAdmin());
+      // Only admins can create assignments
+      allow create: if isAdmin();
+      // Only admins can update assignments
+      allow update: if isAdmin();
+      // Only admins can delete assignments
+      allow delete: if isAdmin();
+    }
+    
+    // Activities collection
+    match /activities/{activityId} {
+      // Users can read activities related to them
+      allow read: if isAuthenticated() && 
+        (resource.data.volunteerId == request.auth.uid || isAdmin());
+      // Volunteers can create their own activities
+      allow create: if isAuthenticated() && 
+        request.resource.data.volunteerId == request.auth.uid;
+      // Only admins can update/delete activities or volunteers can update their own pending activities
+      allow update: if isAdmin() || 
+        (isOwner(resource.data.volunteerId) && resource.data.status == 'pending');
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // Reports collection
+    match /reports/{reportId} {
+      // Only admins can read reports
+      allow read: if isAdmin();
+      // Only admins can create reports
+      allow create: if isAdmin();
+      // Only admins can update/delete reports
+      allow update, delete: if isAdmin();
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isOwner(resource.data.userId);
+      // Only backend can create notifications
+      allow create: if false;
+      // Users can mark their own notifications as read
+      allow update: if isOwner(resource.data.userId) && 
+        request.resource.data.keys() == resource.data.keys() - ['read'];
+      // Users can delete their own notifications
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+## Rules Explanation
+
+1. **isAuthenticated()**: Checks if user is logged in
+2. **isAdmin()**: Checks if user has admin role
+3. **isOwner(userId)**: Checks if current user matches the userId
+
+### Collection Permissions
+
+- **Users**: Protected - only users can read their own, admins can read all
+- **Volunteers**: Semi-public - registration is open, but profile access is restricted
+- **Projects**: Read-only for authenticated users, write-only for admins
+- **Assignments**: Restricted by volunteer ID and admin access
+- **Activities**: Restricted by volunteer ID with approval workflow
+- **Reports**: Admin-only
+- **Notifications**: User-specific access
+
+---
+
+## Testing Rules
+
+Use Firebase Emulator Suite for local testing:
+
+```bash
+firebase emulators:start --only firestore
+```
+
+Write tests in `firestore.rules.test.js` to verify security rules.
