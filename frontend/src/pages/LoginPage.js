@@ -41,6 +41,36 @@ function LoginPage({ onLogin }) {
           <div className="auth-feature"><div className="auth-feature-icon">📊</div><span>Real-time reporting</span></div>
           <div className="auth-feature"><div className="auth-feature-icon">🎯</div><span>Event & project tracking</span></div>
         </div>
+        <div style={{ 
+          marginTop: 'auto', 
+          padding: '16px 20px', 
+          background: 'rgba(255, 255, 255, 0.1)', 
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+            fontSize: '18px',
+            color: 'white'
+          }}>AD</div>
+          <div>
+            <p style={{ margin: 0, fontWeight: '700', color: '#fff', fontSize: '15px' }}>Anvay Deshmukh</p>
+            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', fontSize: '13px' }}>anvaywork2@gmail.com</p>
+          </div>
+        </div>
       </div>
       <div className="auth-right">
         <div className="auth-card">
@@ -63,6 +93,25 @@ function LoginPage({ onLogin }) {
           <div className="auth-links">
             <p>Don't have an account? <Link to="/signup">Create one free</Link></p>
             <p>Want to volunteer? <Link to="/register">Fill out the volunteer form</Link></p>
+          </div>
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <a 
+              href="https://digitalheroesco.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                padding: '10px 20px',
+                backgroundColor: '#111827',
+                color: '#fff',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Built for Digital Heroes
+            </a>
           </div>
         </div>
       </div>
